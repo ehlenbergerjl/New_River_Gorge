@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Buncombe County Airbnbs (2020)</title>
+    <title>Refugee Hosting by GDP (2020)</title>
     	 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.0/dist/leaflet.css"/>
 	     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css">
 
@@ -58,22 +58,22 @@
 <script>
   // 1. Create a map object.
   var mymap = L.map('map', {
-      center: [35.5946,-82.5540], //note that we've centered the map to downtown AVL
-      zoom: 13, //this line adjusts the starting zoom level of the map
+      center: [32,0], //note that we've centered the map to downtown AVL
+      zoom: 1.5, //this line adjusts the starting zoom level of the map
       maxZoom: 18,//this line sets the maximum zoom level
-      minZoom: 11,//this line sets the minimum zoom level
+      minZoom: 1,//this line sets the minimum zoom level
       detectRetina: true // detect whether the screen is high resolution or not.
   });
 
-  L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(mymap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
 
   // 3. Add Airbnb GeoJSON Data
   // Null variable that will hold Airbnb data
-  var airbnb_listings = null;
+  var Refugee_hosting = null;
   // add several extra spaces here.
   //steps 4, 5, etc. will be inserted in this line location.
   // 4. build up a set of colors from colorbrewer's dark2 category
-  var colors = chroma.scale('Dark2').mode('lch').colors(3);
+  var colors = chroma.scale('Dark2').mode('lch').colors(16);
   // 5. dynamically append style classes to this page. The style classes will be used to shade the markers.
   // We can use a for loop to do this.
   for (i = 0; i < 3; i++) {
@@ -83,9 +83,9 @@
   // Get GeoJSON and put it on the map when it loads
   // Make sure you have the correct directory path below
   // You can see we're also adding attribution information for our data sources
-  // We will also add lines of code around this airbnb_listings object as we adjust the style of the symbols
+  // We will also add lines of code around this Refugee_hosting object as we adjust the style of the symbols
   //Make sure and change your authorname in the attribute information
-  airbnb_listings = L.geoJson.ajax("assets/airbnb_listings.geojson",{
+  Refugee_hosting = L.geoJson.ajax("assets/Refugees.GeoJson",{
 
   pointToLayer: function(feature, latlng) {
       var id = 0;
@@ -94,13 +94,13 @@
       else { id = 2;} // All other property types from attribute table
       return L.marker(latlng, {icon: L.divIcon({className: 'fab fa-airbnb marker-color-' + (id + 1).toString() })});
     },
-      attribution: 'Airbnb Listings &copy; Inside Airbnb | Asheville Zoning Districts &copy; City of Asheville Open Data | Base Map &copy; CartoDB | Map Author: Jason Ehlenberger'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://thematicmapping.org">Bjorn Sandvik</a> Shapefile | <a href="https://www.unhcr.org/data.html">UNHCR Data</a> &copy; | <a href="https://data.worldbank.org">World Bank Data</a> &copy; | Map Author: Jason Ehlenberger'
   });
   // Add the Airbnbs to the map.
-  airbnb_listings.addTo(mymap);
+  Refugee_hosting.addTo(mymap);
 
   // 6. Set function for color ramp
-  colors = chroma.scale('greens').colors(5); //we'll use 5 classes of purples
+  colors = chroma.scale('greens').colors(16); //we'll use 5 classes of purples
 
   // this function manually defines your choropleth classification system
   //so you'll need to figure out which break points you'd like to use
@@ -108,12 +108,24 @@
   //this equal interval classification with 5 classes, takes the range of the
   //data (133) and divides it by 5, to show there are intervals of 27 per class
   //so...
-  function setColor(density) {
+  function setColor(CLASS) {
       var id = 0;
-      if (density > 106) { id = 4; } //133-27=106:highest fifth class
-      else if (density > 79 && density <= 106) { id = 3; } //106-27=79:4thclass
-      else if (density > 52 && density <= 79) { id = 2; } //79-27=52:3rdclass
-      else if (density > 25 && density <= 52) { id = 1; } //52-27=25:2ndclass
+      if ( GCLASS <='D' && RCLASS = 1) { id = 1; }
+      else   if ( GCLASS <='D' && RCLASS = 2) { id = 2; } //106-27=79:4thclass
+      else   if ( GCLASS <='D' && RCLASS = 3) { id = 3; }
+      else   if ( GCLASS <='D' && RCLASS = 4) { id = 4; }
+      else   if ( GCLASS <='C' && RCLASS = 1) { id = 5; }
+      else   if ( GCLASS <='C' && RCLASS = 2) { id = 6; }
+      else   if ( GCLASS <='C' && RCLASS = 3) { id = 7; }
+      else   if ( GCLASS <='C' && RCLASS = 4) { id = 8; }
+      else   if ( GCLASS <='B' && RCLASS = 1) { id = 9; }
+      else   if ( GCLASS <='B' && RCLASS = 2) { id = 10; }
+      else   if ( GCLASS <='B' && RCLASS = 3) { id = 11; }
+      else   if ( GCLASS <='B' && RCLASS = 4) { id = 12; }
+      else   if ( GCLASS <='A' && RCLASS = 1) { id = 13; }
+      else   if ( GCLASS <='A' && RCLASS = 2) { id = 14; }
+      else   if ( GCLASS <='A' && RCLASS = 3) { id = 15; }
+      else   if ( GCLASS <='A' && RCLASS = 4) { id = 16; }
       else  { id = 0; }
       return colors[id];
   }
@@ -130,7 +142,7 @@
   }
 
   // 8. Add county polygons
-  L.geoJson.ajax("assets/zoning_districts.geojson", {
+  L.geoJson.ajax("assets/Refugees.GeoJson", {
       style: style
   }).addTo(mymap);
   // 9. Create Leaflet Control Object for Legend
@@ -142,7 +154,7 @@
       // Create Div Element and Populate it with HTML
       var div = L.DomUtil.create('div', 'legend');
       //this line creates a title for the choropleth part of the legend
-      div.innerHTML += '<b>Airbnbs per District</b><br />';
+      div.innerHTML += '<b>Refugees vs GDP of Host Nation (Per Capita)</b><br />';
       //notice the class breaks entered at the end of the next 5 lines
       //the colors specify the shade of purple that we used to do the polygon shading
       div.innerHTML += '<i style="background: ' + colors[4] + '; opacity: 0.5"></i><p>107+</p>';
