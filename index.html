@@ -66,19 +66,22 @@
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
 
   var Refugee_hosting = null;
-  var colors = chroma.scale('OrRd').mode('lch').colors(3);
-  for (i = 0; i < 3; i++) {
+  var colors = chroma.scale('OrRd').mode('lch').colors(5);
+  for (i = 1; i < 5; i++) {
       $('head').append($("<style> .marker-color-" + (i + 1).toString() + " { color: " + colors[i] + "; font-size: 15px; text-shadow: 0 0 3px #ffffff;} </style>"));
   }
   Refugee_hosting = L.geoJson.ajax("assets/refdata.geojson",{
 
+  onEachFeature: function (feature, layer) {
+         layer.bindPopup(feature.properties.NAME);
+     },
   pointToLayer: function(feature, latlng) {
       var id = 0;
-      if (feature.properties.RCLASS == '1') { id = 0; }
-      else if (feature.properties.RCLASS == '2')  { id = 1; }
-      else if (feature.properties.RCLASS == '3')  { id = 2; }
+      if (feature.properties.rclass == 1) { id = 0; }
+      else if (feature.properties.rclass == 2)  { id = 1; }
+      else if (feature.properties.rclass == 3)  { id = 2; }
       else { id = null;}
-      return L.marker(latlng, {icon: L.divIcon({className: 'fab fa-solid fa-people-pulling marker-color-' + (id + 1).toString() })});
+      return L.marker(latlng, {icon: L.divIcon({className: 'fab fa-solid fa-people-pulling marker-color-' + (id + 2).toString() })});
     },
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://thematicmapping.org">Bjorn Sandvik</a> Shapefile | <a href="https://www.unhcr.org/data.html">UNHCR Data</a> &copy; | <a href="https://data.worldbank.org">World Bank Data</a> &copy; | Map Author: Jason Ehlenberger'
   });
@@ -101,12 +104,11 @@
           fillOpacity: 0.8,
           weight: 0.2,
           opacity: 1,
-          color: 'black',
-          dashArray: '0'
+          color: 'black'
       };
   }
 
-  L.geoJson.ajax("assets/refdata.geojson", {
+  L.geoJson.ajax("assets/gdpdata.geojson", {
       style: style
   }).addTo(mymap);
   var legend = L.control({position: 'bottomleft'});
