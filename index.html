@@ -9,11 +9,28 @@
 
     <style>
  	html, body, #map { width: 100%; height: 100%; margin: 0; background: #ffffff; }
-  .legend {
-      line-height: 40px;
+  .info {
+      z-index: 100;
+      position: absolute;
+      width: 225px;
+      right: 10px;
+      top: 10px;
       font-family: 'Cyrillic','Roboto Mono', sans-serif;
       font-size: 16px;
-      width: 250px;
+      text-align: right;
+      padding: 6px 8px;
+      background: white;
+      background: rgba(255,255,255,0.75);
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      border-radius: 5px;
+
+        }
+
+  .legend {
+      line-height: 35px;
+      font-family: 'Cyrillic','Roboto Mono', sans-serif;
+      font-size: 16px;
+      width: 200px;
       color: #333333;
       padding: 6px 8px;
       background: white;
@@ -55,7 +72,7 @@
 <div id="map"></div>
 <script>
 
-  var mymap = L.map('map', {
+  var map = L.map('map', {
       center: [32,0],
       zoom: 1.5,
       maxZoom: 18,
@@ -63,29 +80,33 @@
       detectRetina: true
   });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
   var Refugee_hosting = null;
-  var colors = chroma.scale('OrRd').mode('lch').colors(5);
+  var colors = chroma.scale('OrRd').mode('hcl').colors(5);
   for (i = 1; i < 5; i++) {
       $('head').append($("<style> .marker-color-" + (i + 1).toString() + " { color: " + colors[i] + "; font-size: 15px; text-shadow: 0 0 3px #ffffff;} </style>"));
   }
   Refugee_hosting = L.geoJson.ajax("assets/refdata.geojson",{
 
-  onEachFeature: function (feature, layer) {
-         layer.bindPopup(feature.properties.NAME);
-     },
+  //onEachFeature: function (feature, layer) {
+//         layer.bindPopup(feature.properties.NAME);
+//     },
   pointToLayer: function(feature, latlng) {
       var id = 0;
       if (feature.properties.rclass == 1) { id = 0; }
       else if (feature.properties.rclass == 2)  { id = 1; }
       else if (feature.properties.rclass == 3)  { id = 2; }
       else { id = null;}
-      return L.marker(latlng, {icon: L.divIcon({className: 'fab fa-solid fa-people-pulling marker-color-' + (id + 2).toString() })});
+      return L.marker(latlng, {icon: L.divIcon({className: 'fab fa-solid fa-people-pulling marker-color-' + (id + 2).toString() })
+    })
+
+    ;
     },
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://thematicmapping.org">Bjorn Sandvik</a> Shapefile | <a href="https://www.unhcr.org/data.html">UNHCR Data</a> &copy; | <a href="https://data.worldbank.org">World Bank Data</a> &copy; | Map Author: Jason Ehlenberger'
   });
-  Refugee_hosting.addTo(mymap);
+
+  Refugee_hosting.addTo(map);
 
   colors = chroma.scale('greens').colors(5);
 
@@ -107,16 +128,81 @@
           color: 'black'
       };
   }
+  var geojson = null;
 
-  L.geoJson.ajax("assets/gdpdata.geojson", {
-      style: style
-  }).addTo(mymap);
+  var info = L.control();
+
+  info.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'info');
+      this.update();
+      return this._div;
+
+  };
+
+  info.update = function (properties) {
+      this._div.innerHTML = '<h3>Refugee Hosting vs GDP</h3>' +  (properties ?
+          '<b>' + properties.NAME + '</b><br />' + properties.Refugees + ' refugees'
+          : 'Hover over a country');
+
+  };
+
+  info.addTo(map);
+
+function highlightFeature(e) {
+
+  var layer = e.target;
+
+      layer.setStyle({
+          weight: 2,
+          opacity: 0.8,
+          color: 'black',
+  });
+
+  layer.bringToFront();
+
+
+  info.update(layer.feature.properties);
+
+  }
+
+
+function zoomToFeature(e) {
+
+  map.fitBounds(e.target.getBounds());
+
+  }
+
+
+function resetHighlight(e) {
+
+  geojson.resetStyle(e.target);
+
+  info.update();
+
+  }
+
+function onEachFeature(feature, layer) {
+
+  layer.on({
+    mouseover: highlightFeature,
+    click: zoomToFeature,
+    mouseout: resetHighlight
+
+  });
+
+  }
+
+  geojson = L.geoJson.ajax("assets/gdpdata.geojson", {
+      style: style,
+      onEachFeature: onEachFeature
+
+  }).addTo(map);
   var legend = L.control({position: 'bottomleft'});
 
   legend.onAdd = function () {
 
       var div = L.DomUtil.create('div', 'legend');
-      div.innerHTML += '<b>Wealth (GDP/PPP)</b><br />';
+      div.innerHTML += '<b>GDP/PPP(GK$)</b><br />';
       div.innerHTML += '<i style="background: ' + colors[4] + '; opacity: 0.8"></i><p>71,742+</p>';
       div.innerHTML += '<i style="background: ' + colors[3] + '; opacity: 0.8"></i><p>44,491-71,741</p>';
       div.innerHTML += '<i style="background: ' + colors[2] + '; opacity: 0.8"></i><p>22,793-44,490</p>';
@@ -129,9 +215,9 @@
       return div;
   };
 
-  legend.addTo(mymap);
+  legend.addTo(map);
 
-  L.control.scale({position: 'bottomright'}).addTo(mymap);
+  L.control.scale({position: 'bottomright'}).addTo(map);
 
   var popup = L.popup();
 
