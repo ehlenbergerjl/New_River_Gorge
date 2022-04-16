@@ -142,8 +142,9 @@
   info.update = function (properties) {
       this._div.innerHTML = '<h3>Refugee Hosting vs GDP</h3>' +  (properties ?
           '<b>' + properties.NAME + '</b><br />' + properties.Refugees + ' refugees'
+          + '<br />'
+          + ' GK$' + properties.GDP + ' GDP(PPP)'
           : 'Hover over a country');
-
   };
 
   info.addTo(map);
